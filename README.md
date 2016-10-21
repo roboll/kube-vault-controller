@@ -17,6 +17,7 @@ Claim secrets from [Vault](https://vaultproject.io) for use in Kubernetes.
 * Per secret Vault authentication with [token](https://www.vaultproject.io/docs/auth/token.html) or [app role](https://www.vaultproject.io/docs/auth/approle.html).
 * Add `--ingres-label` flag and watch ingress to fulfill tls spec.
 * Template several secret values into a single datom.
+* Add service account and RBAC role into chart.
 * Write user guide.
 
 ## Install
