@@ -5,6 +5,7 @@ metadata:
 spec:
   type: kubernetes.io/tls
   path: pki/issue/example
+  renew: 30
   data:
     common_name: "example.com"
-    ttl: 60s
+    ttl: 1m

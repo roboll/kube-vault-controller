@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare name/value pairs to be passed into your templates.
 # name: value
-Image: quay.io/roboll/kube-vault-controller:v0.1
+Image: quay.io/roboll/kube-vault-controller:v0.3
 Namespace: kube-system
 
 VaultToken: ""
