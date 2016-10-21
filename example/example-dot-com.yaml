@@ -1,0 +1,10 @@
+kind: SecretClaim
+apiVersion: vaultproject.io/v1
+metadata:
+  name: example-dot-com
+spec:
+  type: kubernetes.io/tls
+  path: pki/issue/example
+  data:
+    common_name: "example.com"
+    ttl: 60s

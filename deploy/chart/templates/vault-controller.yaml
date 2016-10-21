@@ -1,0 +1,27 @@
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: vault-controller
+  namespace: {{ .Namespace | quote }}
+  labels:
+    app: vault-controller
+    chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: vault-controller
+    spec:
+      containers:
+        - name: vault-controller
+          image: {{ .Image }}
+          command:
+            - /kube-vault-controller
+            - --sync-period=1m
+            - --namespace={{ .WatchNamespace }}
+          env:
+            - name: VAULT_ADDR
+              value: {{ .VaultAddress }}
+            - name: VAULT_TOKEN
+              value: {{ .VaultToken }}

@@ -1,0 +1,51 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: vault
+  namespace: kube-system
+  labels:
+    app: vault
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9108"
+spec:
+  selector:
+    app: vault
+  ports:
+  - name: http
+    port: 8200
+    protocol: TCP
+
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: vault
+  namespace: kube-system
+  labels:
+    app: vault
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: vault
+    spec:
+      containers:
+        - name: vault
+          image: quay.io/roboll/vault:v0.4.0
+          command:
+            - /opt/bin/vault
+            - server
+            - -dev
+          ports:
+            - name: http
+              containerPort: 8200
+              hostPort: 8200
+              protocol: TCP
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - IPC_LOCK

@@ -1,0 +1,7 @@
+kind: SecretClaim
+apiVersion: vaultproject.io/v1
+metadata:
+  name: aws-secret
+spec:
+  type: Opaque
+  path: aws/creds/example
