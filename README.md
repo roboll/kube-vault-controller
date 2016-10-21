@@ -18,6 +18,7 @@ Claim secrets from [Vault](https://vaultproject.io) for use in Kubernetes.
 * Add `--ingres-label` flag and watch ingress to fulfill tls spec.
 * Template several secret values into a single datom.
 * Add service account and RBAC role into chart.
+* Support `time.Duration` for `renew`.
 * Write user guide.
 
 ## Install
