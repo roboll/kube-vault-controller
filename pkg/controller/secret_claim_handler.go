@@ -5,10 +5,10 @@ import (
 	"reflect"
 
 	"github.com/roboll/kube-vault-controller/pkg/kube"
-	"k8s.io/client-go/1.5/pkg/api"
-	"k8s.io/client-go/1.5/pkg/runtime/serializer"
-	"k8s.io/client-go/1.5/rest"
-	"k8s.io/client-go/1.5/tools/cache"
+	"k8s.io/client-go/pkg/api"
+	"k8s.io/client-go/pkg/runtime/serializer"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/cache"
 )
 
 func newSecretClaimHandler(manager kube.SecretClaimManager) cache.ResourceEventHandlerFuncs {

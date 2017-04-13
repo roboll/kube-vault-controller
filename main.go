@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	"k8s.io/client-go/1.5/tools/clientcmd"
+	"k8s.io/client-go/tools/clientcmd"
 
 	vault "github.com/hashicorp/vault/api"
 	"github.com/roboll/kube-vault-controller/pkg/controller"
