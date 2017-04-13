@@ -6,9 +6,9 @@ import (
 
 	"github.com/roboll/kube-vault-controller/pkg/kube"
 
-	"k8s.io/client-go/1.5/kubernetes"
-	"k8s.io/client-go/1.5/rest"
-	"k8s.io/client-go/1.5/tools/cache"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/cache"
 )
 
 func newSecretHandler(manager kube.SecretClaimManager, claims cache.Store) cache.ResourceEventHandlerFuncs {
@@ -57,6 +57,6 @@ func newSecretSource(config *rest.Config, namespace string) (cache.ListerWatcher
 		return nil, err
 	}
 
-	secretClient := clientset.Core().GetRESTClient()
+	secretClient := clientset.Core().RESTClient()
 	return cache.NewListWatchFromClient(secretClient, "secrets", namespace, nil), nil
 }

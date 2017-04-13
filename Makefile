@@ -6,6 +6,10 @@ generate:
 	go generate ${PKGS}
 .PHONY: generate
 
+deps:
+	dep ensure
+.PHONY: deps
+
 build:
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a .
 .PHONY: build
