@@ -9,11 +9,10 @@ import (
 
 	vaultapi "github.com/hashicorp/vault/api"
 	"github.com/roboll/kube-vault-controller/pkg/kube"
-	"k8s.io/client-go/1.5/kubernetes"
-	"k8s.io/client-go/1.5/pkg/api"
-	"k8s.io/client-go/1.5/pkg/api/v1"
-	"k8s.io/client-go/1.5/rest"
-	"k8s.io/client-go/1.5/tools/cache"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/cache"
 )
 
 const (
@@ -155,7 +154,7 @@ func (ctrl *controller) DeleteSecret(claim *kube.SecretClaim) error {
 	}
 
 	log.Printf("vault-controller: %s: deleting secret", key)
-	return ctrl.kclient.Core().Secrets(claim.Namespace).Delete(claim.Name, &api.DeleteOptions{})
+	return ctrl.kclient.Core().Secrets(claim.Namespace).Delete(claim.Name, &v1.DeleteOptions{})
 }
 
 func secretFromVault(claim *kube.SecretClaim, secret *vaultapi.Secret) *v1.Secret {

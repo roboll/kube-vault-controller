@@ -7,9 +7,9 @@ import (
 	"github.com/roboll/kube-vault-controller/pkg/kube"
 	"github.com/roboll/kube-vault-controller/pkg/vault"
 
-	"k8s.io/client-go/1.5/pkg/api/v1"
-	"k8s.io/client-go/1.5/rest"
-	"k8s.io/client-go/1.5/tools/cache"
+	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/cache"
 )
 
 type Controller struct {
