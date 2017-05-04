@@ -124,8 +124,12 @@
 			"revisionTime": "2017-04-10T11:07:28Z"
 		},
 		{
+			"checksumSHA1": "2OofLhHRnS/xkDiAjKvn7LmY228=",
 			"path": "github.com/emicklei/go-restful/swagger",
-			"revision": ""
+			"revision": "777bb3f19bcafe2575ffb2a3e46af92509ae9594",
+			"revisionTime": "2015-11-26T14:56:26Z",
+			"version": "v1.2",
+			"versionExact": "v1.2"
 		},
 		{
 			"checksumSHA1": "40Ns85VYa4smQPcewZ7SOdfLnKU=",
@@ -300,10 +304,10 @@
 			"revisionTime": "2017-04-10T13:46:25Z"
 		},
 		{
-			"checksumSHA1": "NRXFJ+XdP3BcA8ABvHSxjqcOcEA=",
+			"checksumSHA1": "8VOnoB0DNWtRNMFvfuA8AuYOLik=",
 			"path": "github.com/hashicorp/vault/api",
-			"revision": "892d558fa286162f8370f1e9c2fc2de2f89c3861",
-			"revisionTime": "2017-04-10T13:46:25Z"
+			"revision": "f4ae1ff3f66a7fda006606aa491eab716160250c",
+			"revisionTime": "2017-05-04T21:08:02Z"
 		},
 		{
 			"checksumSHA1": "ft77GtqeZEeCXioGpF/s6DlGm/U=",
