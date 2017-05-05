@@ -1,0 +1,12 @@
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/hashicorp/vault"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/ugorji/go"
+
+[[dependencies]]
+  name = "k8s.io/client-go"
+  version = "^2.0.0"
