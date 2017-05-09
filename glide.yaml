@@ -1,0 +1,6 @@
+package: github.com/roboll/kube-vault-controller
+import:
+- package: k8s.io/client-go
+  version: v2.0.0
+- package: github.com/hashicorp/vault
+  version: ^0.7.2
