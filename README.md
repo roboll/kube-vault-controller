@@ -38,10 +38,10 @@ kind: SecretClaim
 apiVersion: vaultproject.io/v1
 metadata:
   name: some-secret
-  spec:
-    type: Opaque
-    path: secret/example
-    renew: 1h
+spec:
+  type: Opaque
+  path: secret/example
+  renew: 3600
 ```
 
 A secret by the same name, in the same namespace, will be created:
