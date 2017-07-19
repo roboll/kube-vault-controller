@@ -103,3 +103,8 @@ spec:
 ## About
 
 The controller is built with https://github.com/kubernetes/client-go, specifically the [`Informer`](https://github.com/kubernetes/client-go/blob/c72e2838b9cfac95603049d57c9abba12e587fff/tools/cache/controller.go#L196) API which makes watching for resources changes quite simple. The controller is triggered by changes from streaming updates via watch, and also syncs all resources each `sync-period`. The sync period is critical as it ensures all resources are examined periodically, allowing the application to remain stateless and not schedule operations in advance - when a secret is examined and the lease expiration is within it's claimed renewal period, the lease is renewed (if renewable) or the secret is rotated. To ensure secrets are renewed before their lease expires, ensure your sync period is smaller than your smallest claimed renewal time.
+
+## Updating Dependencies
+
+The project uses [glide](TODO) for dependency management. See the [glide docs](TODO)
+and the Kuberenetes client-go lib's [`INSTALL.md`](TODO) for details and usage.
