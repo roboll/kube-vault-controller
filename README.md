@@ -10,6 +10,7 @@ Claim secrets from [Vault](https://vaultproject.io) for use in Kubernetes.
 * Use Kubernetes secret objects, including TLS type for ingress.
 * Configurable lease renewal buffer, automatically rotate secrets for expiring leases.
 * Easy ops: no persistent storage, everything stored in Kubernetes.
+* [Namespaced secrets](#namespaced-secrets): Enforcing that secrets are only accessed per namespace
 
 
 ## TODO
@@ -103,3 +104,30 @@ spec:
 ## About
 
 The controller is built with https://github.com/kubernetes/client-go, specifically the [`Informer`](https://github.com/kubernetes/client-go/blob/c72e2838b9cfac95603049d57c9abba12e587fff/tools/cache/controller.go#L196) API which makes watching for resources changes quite simple. The controller is triggered by changes from streaming updates via watch, and also syncs all resources each `sync-period`. The sync period is critical as it ensures all resources are examined periodically, allowing the application to remain stateless and not schedule operations in advance - when a secret is examined and the lease expiration is within it's claimed renewal period, the lease is renewed (if renewable) or the secret is rotated. To ensure secrets are renewed before their lease expires, ensure your sync period is smaller than your smallest claimed renewal time.
+
+## Namespaced secrets
+
+This feature is useful if you are running a Kubernetes cluster as a service and want kube-vault-controller to namespace secrets access. 
+
+By adding a `--namespace-prefix` to the arguments you can ensure that all secretClaims created under this path will only be able to access their own namespace. Secrets that fall outside this path will still be globally accessible for the cluster.
+
+### Example usage
+
+* Create a vault policy for your cluster with the desired prefix
+  ```
+  path "secret/cluster-name/*" {
+    capabilities = ["read"]
+  }
+  ```
+* Run kube-vault-controller with this prefix
+  ```
+  --namespace-prefix='secret/cluster-name/'
+  ```
+
+Users inside of the namespace `example` will not only be able to create secretClaims under the path `secret/cluster-name/example/*`. If they try to access another path under the prefix that isn't their namespace they will see the following error:
+
+```
+2019/11/26 10:52:09 error: failed to update secret for key example/not-allowed: vault-controller: "example/not-allowed": can't create path "secret/cluster-name/othernamespace/not-allowed" because it is under the namespacePrefix "secret/cluster-name/" but not in its own namespace "example"
+```
+
+You can also look at the [namespaced-secrets example](./example/namespaced-secrets.yaml) to get a better idea of how it works. 

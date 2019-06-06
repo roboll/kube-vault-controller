@@ -17,6 +17,8 @@ var (
 	kubeconfig = flag.String("kubeconfig", "", "Path to the kubeconfig file. Defaults to in-cluster config.")
 	namespace  = flag.String("namespace", "", "Namespace to watch for claims.")
 
+	namespacePrefix = flag.String("namespace-prefix", "", "Any claims with this prefix will only be accessible per namespace")
+
 	syncPeriod = flag.Duration("sync-period", 0, "Sync all resources each period.")
 )
 
@@ -26,6 +28,9 @@ func main() {
 	log.Printf("kube-vault-controller starting, sync period %s.", *syncPeriod)
 	if *namespace != "" {
 		log.Printf("watching namespace %s.", *namespace)
+	}
+	if *namespacePrefix != "" {
+		log.Printf("all secrets with prefix %s will be namespaced", *namespacePrefix)
 	}
 
 	vconfig := vault.DefaultConfig()
@@ -44,6 +49,7 @@ func main() {
 
 	config := &controller.Config{
 		Namespace:  *namespace,
+		NamespacePrefix: *namespacePrefix,
 		SyncPeriod: *syncPeriod,
 	}
 	ctrl, err := controller.New(config, vconfig, kconfig)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	vaultapi "github.com/hashicorp/vault/api"
@@ -27,11 +28,12 @@ const (
 )
 
 type controller struct {
-	vclient *vaultapi.Client
-	kclient *kubernetes.Clientset
+	vclient         *vaultapi.Client
+	kclient         *kubernetes.Clientset
+	namespacePrefix string
 }
 
-func NewController(vconfig *vaultapi.Config, kconfig *rest.Config) (kube.SecretClaimManager, error) {
+func NewController(vconfig *vaultapi.Config, kconfig *rest.Config, namespacePrefix string) (kube.SecretClaimManager, error) {
 	vclient, err := vaultapi.NewClient(vconfig)
 	if err != nil {
 		return nil, err
@@ -42,15 +44,36 @@ func NewController(vconfig *vaultapi.Config, kconfig *rest.Config) (kube.SecretC
 	}
 
 	return &controller{
-		vclient: vclient,
-		kclient: kclient,
+		vclient:         vclient,
+		kclient:         kclient,
+		namespacePrefix: namespacePrefix,
 	}, nil
+}
+
+func pathAllowed(path string, prefix string, namespace string) bool {
+	// If this secret is outside the prefix it is always allowed
+	if !strings.HasPrefix(path, prefix) {
+		return true
+	}
+
+	// If the path starts with the namespace prefix + the namespace then it is allowed
+	if strings.HasPrefix(path, prefix+namespace+"/") {
+		return true
+	}
+
+	return false
 }
 
 func (ctrl *controller) CreateOrUpdateSecret(claim *kube.SecretClaim, force bool) error {
 	key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(claim)
 	if err != nil {
 		return err
+	}
+
+	if ctrl.namespacePrefix != "" {
+		if !pathAllowed(claim.Spec.Path, ctrl.namespacePrefix, claim.Namespace) {
+			return fmt.Errorf("vault-controller: %q: can't create path %q because it is under the namespacePrefix %q but not in its own namespace %q", key, claim.Spec.Path, ctrl.namespacePrefix, claim.Namespace)
+		}
 	}
 
 	existing, err := ctrl.kclient.Core().Secrets(claim.Namespace).Get(claim.Name)

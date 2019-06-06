@@ -7,7 +7,7 @@ import (
 	"github.com/roboll/kube-vault-controller/pkg/kube"
 	"github.com/roboll/kube-vault-controller/pkg/vault"
 
-	"k8s.io/client-go/pkg/api/v1"
+	v1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 )
@@ -18,8 +18,9 @@ type Controller struct {
 }
 
 type Config struct {
-	Namespace  string
-	SyncPeriod time.Duration
+	Namespace       string
+	NamespacePrefix string
+	SyncPeriod      time.Duration
 }
 
 func New(config *Config, vconfig *vaultapi.Config, kconfig *rest.Config) (*Controller, error) {
@@ -31,7 +32,7 @@ func New(config *Config, vconfig *vaultapi.Config, kconfig *rest.Config) (*Contr
 	if err != nil {
 		return nil, err
 	}
-	vaultController, err := vault.NewController(vconfig, kconfig)
+	vaultController, err := vault.NewController(vconfig, kconfig, config.NamespacePrefix)
 	if err != nil {
 		return nil, err
 	}
