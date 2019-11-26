@@ -10,7 +10,7 @@ import (
 	vaultapi "github.com/hashicorp/vault/api"
 	"github.com/roboll/kube-vault-controller/pkg/kube"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api/v1"
+	v1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 )
@@ -107,6 +107,17 @@ func (ctrl *controller) tryRenewLease(id string) (*vaultapi.Secret, error) {
 	return ctrl.vclient.Sys().Renew(id, 0)
 }
 
+func mergeAnnotations(userAnnotations map[string]string, baseAnnotations map[string]string) map[string]string {
+	if userAnnotations == nil {
+		return baseAnnotations
+	}
+
+	for k, v := range baseAnnotations {
+		userAnnotations[k] = v
+	}
+	return userAnnotations
+}
+
 func (ctrl *controller) updateSecretMetadata(secret *vaultapi.Secret, existing *v1.Secret, claim *kube.SecretClaim) error {
 	leaseDuration := time.Duration(secret.LeaseDuration) * time.Second
 	leaseExpiration := time.Now().Add(leaseDuration).Unix()
@@ -115,11 +126,11 @@ func (ctrl *controller) updateSecretMetadata(secret *vaultapi.Secret, existing *
 			Name:      claim.Name,
 			Namespace: claim.Namespace,
 
-			Annotations: map[string]string{
+			Annotations: mergeAnnotations(claim.Spec.Annotations, map[string]string{
 				LeaseIDKey:         secret.LeaseID,
 				LeaseExpirationKey: strconv.FormatInt(leaseExpiration, 10),
 				RenewableKey:       strconv.FormatBool(secret.Renewable),
-			},
+			}),
 		},
 		Type: existing.Type,
 		Data: existing.Data,
@@ -165,11 +176,11 @@ func secretFromVault(claim *kube.SecretClaim, secret *vaultapi.Secret) *v1.Secre
 			Name:      claim.Name,
 			Namespace: claim.Namespace,
 
-			Annotations: map[string]string{
+			Annotations: mergeAnnotations(claim.Spec.Annotations, map[string]string{
 				LeaseIDKey:         secret.LeaseID,
 				LeaseExpirationKey: strconv.FormatInt(leaseExpiration, 10),
 				RenewableKey:       strconv.FormatBool(secret.Renewable),
-			},
+			}),
 		},
 		Type: claim.Spec.Type,
 		Data: dataForSecret(claim, secret),

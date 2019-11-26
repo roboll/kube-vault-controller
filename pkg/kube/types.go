@@ -4,7 +4,7 @@ package kube
 import (
 	"k8s.io/client-go/pkg/api"
 	"k8s.io/client-go/pkg/api/unversioned"
-	"k8s.io/client-go/pkg/api/v1"
+	v1 "k8s.io/client-go/pkg/api/v1"
 )
 
 const (
@@ -23,10 +23,11 @@ var (
 )
 
 type SecretSpec struct {
-	Type  v1.SecretType          `json:"type"`
-	Path  string                 `json:"path"`
-	Data  map[string]interface{} `json:"data"`
-	Renew int64                  `json:"renew"`
+	Type        v1.SecretType          `json:"type"`
+	Path        string                 `json:"path"`
+	Data        map[string]interface{} `json:"data"`
+	Renew       int64                  `json:"renew"`
+	Annotations map[string]string      `json:"annotations"`
 }
 
 type SecretClaim struct {
