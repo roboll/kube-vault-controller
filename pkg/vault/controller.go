@@ -15,6 +15,8 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
+var timeNow = time.Now
+
 const (
 	LeaseIDKey         = "vaultproject.io/lease-id"
 	LeaseExpirationKey = "vaultproject.io/lease-expiration"
@@ -107,30 +109,37 @@ func (ctrl *controller) tryRenewLease(id string) (*vaultapi.Secret, error) {
 	return ctrl.vclient.Sys().Renew(id, 0)
 }
 
-func mergeAnnotations(userAnnotations map[string]string, baseAnnotations map[string]string) map[string]string {
-	if userAnnotations == nil {
-		return baseAnnotations
+func buildSecretAnnotations(secret *vaultapi.Secret, claim *kube.SecretClaim) map[string]string {
+
+	leaseDuration := time.Duration(secret.LeaseDuration) * time.Second
+	leaseExpiration := timeNow().Add(leaseDuration).Unix()
+
+	annotations := map[string]string{
+		LeaseIDKey:         secret.LeaseID,
+		LeaseExpirationKey: strconv.FormatInt(leaseExpiration, 10),
+		RenewableKey:       strconv.FormatBool(secret.Renewable),
 	}
 
-	for k, v := range baseAnnotations {
-		userAnnotations[k] = v
+	if claim.Spec.Annotations == nil {
+		return annotations
 	}
-	return userAnnotations
+
+	for k, v := range claim.Spec.Annotations {
+		if _, exists := annotations[k]; !exists {
+			annotations[k] = v
+		}
+	}
+
+	return annotations
 }
 
 func (ctrl *controller) updateSecretMetadata(secret *vaultapi.Secret, existing *v1.Secret, claim *kube.SecretClaim) error {
-	leaseDuration := time.Duration(secret.LeaseDuration) * time.Second
-	leaseExpiration := time.Now().Add(leaseDuration).Unix()
 	updated := &v1.Secret{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      claim.Name,
 			Namespace: claim.Namespace,
 
-			Annotations: mergeAnnotations(claim.Spec.Annotations, map[string]string{
-				LeaseIDKey:         secret.LeaseID,
-				LeaseExpirationKey: strconv.FormatInt(leaseExpiration, 10),
-				RenewableKey:       strconv.FormatBool(secret.Renewable),
-			}),
+			Annotations: buildSecretAnnotations(secret, claim),
 		},
 		Type: existing.Type,
 		Data: existing.Data,
@@ -169,18 +178,12 @@ func (ctrl *controller) DeleteSecret(claim *kube.SecretClaim) error {
 }
 
 func secretFromVault(claim *kube.SecretClaim, secret *vaultapi.Secret) *v1.Secret {
-	leaseDuration := time.Duration(secret.LeaseDuration) * time.Second
-	leaseExpiration := time.Now().Add(leaseDuration).Unix()
 	return &v1.Secret{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      claim.Name,
 			Namespace: claim.Namespace,
 
-			Annotations: mergeAnnotations(claim.Spec.Annotations, map[string]string{
-				LeaseIDKey:         secret.LeaseID,
-				LeaseExpirationKey: strconv.FormatInt(leaseExpiration, 10),
-				RenewableKey:       strconv.FormatBool(secret.Renewable),
-			}),
+			Annotations: buildSecretAnnotations(secret, claim),
 		},
 		Type: claim.Spec.Type,
 		Data: dataForSecret(claim, secret),
