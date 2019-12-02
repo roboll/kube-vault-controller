@@ -109,7 +109,7 @@ The controller is built with https://github.com/kubernetes/client-go, specifical
 
 This feature is useful if you are running a Kubernetes cluster as a service and want kube-vault-controller to namespace secrets access. 
 
-By adding a `--namespace-prefix` to the arguments you can ensure that all secretClaims created under this path will only be able to access their own namespace. Secrets that fall outside this path will still be globally accessible for the cluster.
+By adding a `--namespace-prefix` to the arguments you can ensure that all secretClaims starting with this prefix will only be able to access their own namespace. Secrets starting with this prefix need to be written to `${prefix}${namespace}/${key}`. Secrets that fall outside this path will still be globally accessible for the cluster. 
 
 ### Example usage
 
@@ -124,10 +124,12 @@ By adding a `--namespace-prefix` to the arguments you can ensure that all secret
   --namespace-prefix='secret/cluster-name/'
   ```
 
-Users inside of the namespace `example` will not only be able to create secretClaims under the path `secret/cluster-name/example/*`. If they try to access another path under the prefix that isn't their namespace they will see the following error:
+Secretclaims created in the namespace `example` will now only be able to create secretClaims with paths inside `secret/cluster-name/example/*`. If they try to access another path under the prefix that isn't their namespace they will see the following error:
 
 ```
 2019/11/26 10:52:09 error: failed to update secret for key example/not-allowed: vault-controller: "example/not-allowed": can't create path "secret/cluster-name/othernamespace/not-allowed" because it is under the namespacePrefix "secret/cluster-name/" but not in its own namespace "example"
 ```
+
+The prefix can be anything you want it to be. If you want your secrets to be in the form `secret/cluster-name/namespace` you will need to make sure that your prefix is exactly `secret/cluster-name/` with a trailing `/`. You could also use `secret/cluster-name_` as your prefix. This would mean secrets for the `example` namespace need to be written to `secret/cluster-name_example/key`. 
 
 You can also look at the [namespaced-secrets example](./example/namespaced-secrets.yaml) to get a better idea of how it works. 

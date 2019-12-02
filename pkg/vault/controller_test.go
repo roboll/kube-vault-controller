@@ -119,6 +119,20 @@ func Test_pathAllowed(t *testing.T) {
 			namespace: "namespace",
 			want:      false,
 		},
+		{
+			name:      "Prefixes can be anything you like and doesn't need to end with a slash",
+			path:      "secret/testnamespace/key",
+			prefix:    "secret/test",
+			namespace: "namespace",
+			want:      true,
+		},
+		{
+			name:      "Prefixes can even be a dash",
+			path:      "secret/test-namespace/key",
+			prefix:    "secret/test-",
+			namespace: "namespace",
+			want:      true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
