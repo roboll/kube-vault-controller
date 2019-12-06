@@ -82,3 +82,63 @@ func Test_buildSecretAnnotations(t *testing.T) {
 		})
 	}
 }
+
+func Test_pathAllowed(t *testing.T) {
+	tests := []struct {
+		name      string
+		path      string
+		prefix    string
+		namespace string
+		want      bool
+	}{
+		{
+			name:      "Path is outside of prefix",
+			path:      "secret/path/key",
+			prefix:    "secret/otherpath/",
+			namespace: "namespace",
+			want:      true,
+		},
+		{
+			name:      "Path is inside the prefix and in the right namespace",
+			path:      "secret/path/namespace/key",
+			prefix:    "secret/path/",
+			namespace: "namespace",
+			want:      true,
+		},
+		{
+			name:      "Path is inside the prefix but accessing a different namespace",
+			path:      "secret/path/not-my-namespace/key",
+			prefix:    "secret/path/",
+			namespace: "namespace",
+			want:      false,
+		},
+		{
+			name:      "Path is inside the prefix but accessing a namespace that partially matches",
+			path:      "secret/path/namespacepartial/key",
+			prefix:    "secret/path/",
+			namespace: "namespace",
+			want:      false,
+		},
+		{
+			name:      "Prefixes can be anything you like and doesn't need to end with a slash",
+			path:      "secret/testnamespace/key",
+			prefix:    "secret/test",
+			namespace: "namespace",
+			want:      true,
+		},
+		{
+			name:      "Prefixes can even be a dash",
+			path:      "secret/test-namespace/key",
+			prefix:    "secret/test-",
+			namespace: "namespace",
+			want:      true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := pathAllowed(tt.path, tt.prefix, tt.namespace); got != tt.want {
+				t.Errorf("pathAllowed() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
