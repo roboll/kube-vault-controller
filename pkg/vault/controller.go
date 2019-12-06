@@ -10,10 +10,12 @@ import (
 	vaultapi "github.com/hashicorp/vault/api"
 	"github.com/roboll/kube-vault-controller/pkg/kube"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api/v1"
+	v1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 )
+
+var timeNow = time.Now
 
 const (
 	LeaseIDKey         = "vaultproject.io/lease-id"
@@ -107,19 +109,37 @@ func (ctrl *controller) tryRenewLease(id string) (*vaultapi.Secret, error) {
 	return ctrl.vclient.Sys().Renew(id, 0)
 }
 
-func (ctrl *controller) updateSecretMetadata(secret *vaultapi.Secret, existing *v1.Secret, claim *kube.SecretClaim) error {
+func buildSecretAnnotations(secret *vaultapi.Secret, claim *kube.SecretClaim) map[string]string {
+
 	leaseDuration := time.Duration(secret.LeaseDuration) * time.Second
-	leaseExpiration := time.Now().Add(leaseDuration).Unix()
+	leaseExpiration := timeNow().Add(leaseDuration).Unix()
+
+	annotations := map[string]string{
+		LeaseIDKey:         secret.LeaseID,
+		LeaseExpirationKey: strconv.FormatInt(leaseExpiration, 10),
+		RenewableKey:       strconv.FormatBool(secret.Renewable),
+	}
+
+	if claim.Spec.Annotations == nil {
+		return annotations
+	}
+
+	for k, v := range claim.Spec.Annotations {
+		if _, exists := annotations[k]; !exists {
+			annotations[k] = v
+		}
+	}
+
+	return annotations
+}
+
+func (ctrl *controller) updateSecretMetadata(secret *vaultapi.Secret, existing *v1.Secret, claim *kube.SecretClaim) error {
 	updated := &v1.Secret{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      claim.Name,
 			Namespace: claim.Namespace,
 
-			Annotations: map[string]string{
-				LeaseIDKey:         secret.LeaseID,
-				LeaseExpirationKey: strconv.FormatInt(leaseExpiration, 10),
-				RenewableKey:       strconv.FormatBool(secret.Renewable),
-			},
+			Annotations: buildSecretAnnotations(secret, claim),
 		},
 		Type: existing.Type,
 		Data: existing.Data,
@@ -158,18 +178,12 @@ func (ctrl *controller) DeleteSecret(claim *kube.SecretClaim) error {
 }
 
 func secretFromVault(claim *kube.SecretClaim, secret *vaultapi.Secret) *v1.Secret {
-	leaseDuration := time.Duration(secret.LeaseDuration) * time.Second
-	leaseExpiration := time.Now().Add(leaseDuration).Unix()
 	return &v1.Secret{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      claim.Name,
 			Namespace: claim.Namespace,
 
-			Annotations: map[string]string{
-				LeaseIDKey:         secret.LeaseID,
-				LeaseExpirationKey: strconv.FormatInt(leaseExpiration, 10),
-				RenewableKey:       strconv.FormatBool(secret.Renewable),
-			},
+			Annotations: buildSecretAnnotations(secret, claim),
 		},
 		Type: claim.Spec.Type,
 		Data: dataForSecret(claim, secret),
