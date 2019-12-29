@@ -10,7 +10,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"path"
 
 	"golang.org/x/net/http2"
 
@@ -330,14 +329,14 @@ func (c *Client) ClearToken() {
 // NewRequest creates a new raw request object to query the Vault server
 // configured for this client. This is an advanced method and generally
 // doesn't need to be called externally.
-func (c *Client) NewRequest(method, requestPath string) *Request {
+func (c *Client) NewRequest(method, path string) *Request {
 	req := &Request{
 		Method: method,
 		URL: &url.URL{
 			User:   c.addr.User,
 			Scheme: c.addr.Scheme,
 			Host:   c.addr.Host,
-			Path:   path.Join(c.addr.Path, requestPath),
+			Path:   path,
 		},
 		ClientToken: c.token,
 		Params:      make(map[string][]string),
@@ -345,12 +344,12 @@ func (c *Client) NewRequest(method, requestPath string) *Request {
 
 	var lookupPath string
 	switch {
-	case strings.HasPrefix(requestPath, "/v1/"):
-		lookupPath = strings.TrimPrefix(requestPath, "/v1/")
-	case strings.HasPrefix(requestPath, "v1/"):
-		lookupPath = strings.TrimPrefix(requestPath, "v1/")
+	case strings.HasPrefix(path, "/v1/"):
+		lookupPath = strings.TrimPrefix(path, "/v1/")
+	case strings.HasPrefix(path, "v1/"):
+		lookupPath = strings.TrimPrefix(path, "v1/")
 	default:
-		lookupPath = requestPath
+		lookupPath = path
 	}
 	if c.wrappingLookupFunc != nil {
 		req.WrapTTL = c.wrappingLookupFunc(method, lookupPath)
